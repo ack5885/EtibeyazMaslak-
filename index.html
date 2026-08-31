@@ -331,6 +331,24 @@ header h1,.hero h2,.hero p,.sectionTitle h2,.campaignTag,.card h3,.desc,.price,.
   .cardimg{width:60%!important;max-width:220px!important;}
 }
 </style>
+
+<style id="v38-kompakt-teslimat29">
+/* V38: mobil kampanya posterleri yaklaşık %18 daha küçük */
+@media(max-width:620px){
+  .cardimg{
+    width:51%!important;
+    max-width:195px!important;
+    height:auto!important;
+    aspect-ratio:auto!important;
+    object-fit:contain!important;
+    object-position:center!important;
+    margin:4px auto 9px!important;
+  }
+}
+@media(max-width:390px){
+  .cardimg{width:49%!important;max-width:185px!important;}
+}
+</style>
 </head><body>
 <header><h1>ETİBEYAZ MASLAK</h1><b>TAVUK DÖNER - KÖFTE</b></header><main class="wrap">
 <section class="hero">
@@ -397,8 +415,8 @@ header h1,.hero h2,.hero p,.sectionTitle h2,.campaignTag,.card h3,.desc,.price,.
 const p={1:["Kampanya 1","1 Usta İşi Dürüm Alana 1 Usta İşi Dürüm Bedava",199],2:["Kampanya 2","1 Usta İşi Dürüm Alana Ayran Bedava",139],3:["Kampanya 3","2 Usta İşi Dürüm + Patates + 1 Ayran",249],4:["Kampanya 4","1 Usta İşi Dürüm + Patates + Ayran",169]};let c={};
 function add(i){c[i]=(c[i]||0)+1;render();document.querySelector(".cart").scrollIntoView({behavior:"smooth"})}
 function ch(i,d){c[i]+=d;if(c[i]<=0)delete c[i];render()}function del(i){delete c[i];render()}
-function calc(){let q=0,t=0;for(let i in c){q+=c[i];t+=c[i]*p[i][2]}if(document.getElementById("type").value==="Teslimat"&&q>0)t+=20;return[q,t]}
-function render(){let ids=Object.keys(c),e=document.getElementById("items");e.innerHTML=ids.length?ids.map(i=>`<div class="row"><div><b>${p[i][0]}</b><br><span class="small">${p[i][1]}</span><br><b>${c[i]*p[i][2]}</b></div><div class="ctl"><button class="mini" onclick="ch(${i},-1)">−</button><b>${c[i]}</b><button class="mini" onclick="ch(${i},1)">+</button><button class="del" onclick="del(${i})">Sil</button></div></div>`).join(""):'Henüz ürün eklenmedi.';let a=calc();document.getElementById("deliveryFee").textContent=(document.getElementById("type").value==="Teslimat"&&a[0]>0)?"Teslimat: +20":"";document.getElementById("total").textContent="Toplam: "+a[1]+"";document.getElementById("count").textContent=a[0]+" ürün";document.getElementById("bt").textContent=a[1]+""}
+function calc(){let q=0,t=0;for(let i in c){q+=c[i];t+=c[i]*p[i][2]}if(document.getElementById("type").value==="Teslimat"&&q>0)t+=29;return[q,t]}
+function render(){let ids=Object.keys(c),e=document.getElementById("items");e.innerHTML=ids.length?ids.map(i=>`<div class="row"><div><b>${p[i][0]}</b><br><span class="small">${p[i][1]}</span><br><b>${c[i]*p[i][2]}</b></div><div class="ctl"><button class="mini" onclick="ch(${i},-1)">−</button><b>${c[i]}</b><button class="mini" onclick="ch(${i},1)">+</button><button class="del" onclick="del(${i})">Sil</button></div></div>`).join(""):'Henüz ürün eklenmedi.';let a=calc();document.getElementById("deliveryFee").textContent=(document.getElementById("type").value==="Teslimat"&&a[0]>0)?"Teslimat: +29":"";document.getElementById("total").textContent="Toplam: "+a[1]+"";document.getElementById("count").textContent=a[0]+" ürün";document.getElementById("bt").textContent=a[1]+""}
 function toggleAddress(){document.getElementById("addrWrap").style.display=document.getElementById("type").value==="Teslimat"?"block":"none";render()}
 function send(){
   let a=calc(),er=document.getElementById("err");
@@ -458,7 +476,7 @@ SİPARİŞ NO: ${siparisNo}
 ${lines.join("\n")}
 
 💰 TOPLAM: ${a[1]}
-${ty==="Teslimat"?"🛵 Teslimat: +20\n":""}📦 ${ty.toUpperCase()}
+${ty==="Teslimat"?"🛵 Teslimat\n":""}📦 ${ty.toUpperCase()}
 ⏱ ${zaman}
 💳 ÖDEME: ${payment}
 
