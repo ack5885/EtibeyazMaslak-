@@ -418,7 +418,7 @@ function ch(i,d){c[i]+=d;if(c[i]<=0)delete c[i];render()}function del(i){delete 
 function calc(){let q=0,t=0;for(let i in c){q+=c[i];t+=c[i]*p[i][2]}if(document.getElementById("type").value==="Teslimat"&&q>0)t+=29;return[q,t]}
 function render(){let ids=Object.keys(c),e=document.getElementById("items");e.innerHTML=ids.length?ids.map(i=>`<div class="row"><div><b>${p[i][0]}</b><br><span class="small">${p[i][1]}</span><br><b>${c[i]*p[i][2]}</b></div><div class="ctl"><button class="mini" onclick="ch(${i},-1)">−</button><b>${c[i]}</b><button class="mini" onclick="ch(${i},1)">+</button><button class="del" onclick="del(${i})">Sil</button></div></div>`).join(""):'Henüz ürün eklenmedi.';let a=calc();document.getElementById("deliveryFee").textContent=(document.getElementById("type").value==="Teslimat"&&a[0]>0)?"Teslimat: +29":"";document.getElementById("total").textContent="Toplam: "+a[1]+"";document.getElementById("count").textContent=a[0]+" ürün";document.getElementById("bt").textContent=a[1]+""}
 function toggleAddress(){document.getElementById("addrWrap").style.display=document.getElementById("type").value==="Teslimat"?"block":"none";render()}
-function send(){
+async function send(){
   let a=calc(),er=document.getElementById("err");
   er.textContent="";
   if(!a[0]){
@@ -467,7 +467,20 @@ function send(){
   let note=document.getElementById("note").value.trim()||"-";
   let company=document.getElementById("company").value.trim()||"-";
 
-  let siparisNo="EB-"+Date.now().toString().slice(-6);
+  let siparisNo;
+  try{
+    er.textContent="Sipariş numarası hazırlanıyor...";
+    const response=await fetch("/api/order-number",{method:"POST",headers:{"Accept":"application/json"}});
+    if(!response.ok) throw new Error("Sayaç servisi yanıt vermedi");
+    const data=await response.json();
+    if(!data || !data.orderNo) throw new Error("Sipariş numarası alınamadı");
+    siparisNo=data.orderNo;
+    er.textContent="";
+  }catch(e){
+    console.error(e);
+    er.textContent="Sipariş numarası oluşturulamadı. Lütfen tekrar deneyin.";
+    return;
+  }
   let zaman=document.getElementById("time").value;
   let m=`🟥 ETİBEYAZ MASLAK
 SİPARİŞ NO: ${siparisNo}
