@@ -646,6 +646,20 @@ document.addEventListener('DOMContentLoaded',()=>{
     }
   }catch(e){}
 });
+
+  document.addEventListener("click", async function(e){
+    if (!e.target || e.target.id !== "redeemRewardBtn") return;
+    const c = JSON.parse(localStorage.getItem("cirakCustomer") || "null");
+    const phone = normalizePhone((c && c.phone) || "");
+    if (!phone) { alert("Telefon kaydı bulunamadı."); return; }
+
+    e.target.disabled = true;
+    try {
+      const r = await fetch("/api/redeem-reward", {
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({phone})
+      });
       const d = await r.json();
       if (!d.ok) throw new Error(d.error || "Hediye kullanılamadı");
       renderStamps(d.stamps);
@@ -658,56 +672,30 @@ document.addEventListener('DOMContentLoaded',()=>{
     }
   });
 
+async function redeemReward(){
+  const btn=document.getElementById("redeemRewardBtn");
+  let c=null;
+  try{ c=JSON.parse(localStorage.getItem("cirakCustomer")||"null"); }catch(e){}
+  const phone=normalizePhone((c&&c.phone)||"");
+  if(!phone){ alert("Telefon kaydı bulunamadı."); return; }
 
-  async function redeemReward(){
-    const btn = document.getElementById("redeemRewardBtn");
-    const c = JSON.parse(localStorage.getItem("cirakCustomer") || "null");
-    const phone = normalizePhone((c && c.phone) || "");
-
-    if (!phone){
-      alert("Telefon kaydı bulunamadı.");
-      return;
-    }
-
-    if (btn){
-      btn.disabled = true;
-      btn.textContent = "HAZIRLANIYOR...";
-    }
-
-    try{
-      const r = await fetch("/api/redeem-reward", {
-        method: "POST",
-        headers: {"Content-Type":"application/json"},
-        body: JSON.stringify({phone: phone})
-      });
-
-      const d = await r.json();
-
-      if (!r.ok || !d.ok){
-        throw new Error(d.error || "Hediye kullanılamadı.");
-      }
-
-      renderStamps(Number(d.stamps || 0));
-
-      const msg =
-        "🎁 ÇIRAK 5 BİJON HEDİYESİ\n" +
-        "Usta İşi Dürüm + Ayran\n" +
-        "📞 " + phone + "\n" +
-        "✅ Hediye kullanımı";
-
-      window.location.assign(
-        "https://wa.me/905346686001?text=" + encodeURIComponent(msg)
-      );
-
-    }catch(err){
-      alert(err.message || "Bir hata oluştu.");
-      if (btn){
-        btn.disabled = false;
-        btn.textContent = "HEDİYEMİ KULLAN";
-      }
-    }
+  if(btn){ btn.disabled=true; btn.textContent="HAZIRLANIYOR..."; }
+  try{
+    const r=await fetch("/api/redeem-reward",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({phone})
+    });
+    const d=await r.json();
+    if(!r.ok||!d.ok) throw new Error(d.error||"Hediye kullanılamadı.");
+    renderStamps(Number(d.stamps||0));
+    const msg="🎁 ÇIRAK 5 BİJON HEDİYESİ\nUsta İşi Dürüm + Ayran\n📞 "+phone+"\n✅ Hediye kullanımı";
+    window.location.href="https://wa.me/905346686001?text="+encodeURIComponent(msg);
+  }catch(err){
+    alert(err.message||"Bir hata oluştu.");
+    if(btn){ btn.disabled=false; btn.textContent="HEDİYEMİ KULLAN"; }
   }
-
+}
 </script>
 </div>
 <header class="crakOnlyHeader">
