@@ -1,4 +1,3 @@
-
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -17,8 +16,6 @@ export default {
           updated_at TEXT DEFAULT CURRENT_TIMESTAMP
         )
       `).run();
-    }
-
 
       await env.ORDER_DB.prepare(`
         CREATE TABLE IF NOT EXISTS order_bijons (
@@ -30,7 +27,6 @@ export default {
         )
       `).run();
 
-
       await env.ORDER_DB.prepare(`
         CREATE TABLE IF NOT EXISTS reward_uses (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -39,6 +35,7 @@ export default {
           created_at TEXT DEFAULT CURRENT_TIMESTAMP
         )
       `).run();
+    }
 
     if (url.pathname === "/api/customer") {
       if (!env.ORDER_DB) {
