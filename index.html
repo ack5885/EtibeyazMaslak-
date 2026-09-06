@@ -789,7 +789,11 @@ async function send(){
   let siparisNo;
   try{
     er.textContent="Sipariş numarası hazırlanıyor...";
-    const response=await fetch("/api/order-number",{method:"POST",headers:{"Accept":"application/json"}});
+    const response=await fetch("/api/order-number",{
+      method:"POST",
+      headers:{"Accept":"application/json","Content-Type":"application/json"},
+      body:JSON.stringify({phone:digits})
+    });
     if(!response.ok) throw new Error("Sayaç servisi yanıt vermedi");
     const data=await response.json();
     if(!data || !data.orderNo) throw new Error("Sipariş numarası alınamadı");
