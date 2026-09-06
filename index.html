@@ -586,9 +586,15 @@ body.order-mode .ca-order-top{display:block}
 <div class="stamp-card">
 <div class="stamp-head"><div><b>ÇIRAK</b><br/><small>DİJİTAL BİJON KARTI</small></div><b>0/5 BİJON</b></div>
 <div class="stamps"><div class="stamp">1</div><div class="stamp">2</div><div class="stamp">3</div><div class="stamp">4</div><div class="stamp">5</div></div>
-<div class="reward">5 bijon daha → HEDİYEN HAZIR!</div>
+<div class="reward">5 bijon daha → DÜRÜM + AYRAN HEDİYE!</div>
+<div id="rewardReadyBox" style="display:none;margin:18px 0 0;text-align:center">
+  <div style="font-weight:900;font-size:18px;margin-bottom:10px">🎁 USTA İŞİ DÜRÜM + AYRAN HEDİYEN HAZIR!</div>
+  <button id="redeemRewardBtn" type="button" style="width:100%;border:0;border-radius:16px;padding:15px;font-weight:900;font-size:16px;background:#ff7a00;color:#111">HEDİYEMİ KULLAN</button>
+  <div style="font-size:12px;margin-top:8px;color:#666">Hediye kullanıldığında 5 bijon düşer. Hediye siparişi yeni bijon kazandırmaz.</div>
 </div>
-<div class="ca-how"><b>Bijon nasıl işler?</b><br/>Siparişin tamamlandığında 1 bijon hesabına eklenir. Bijonlar müşteri tarafından elle eklenemez. 5 bijonu tamamladığında hediyen hazır!</div>
+
+</div>
+<div class="ca-how"><b>Bijon nasıl işler?</b><br/>Siparişin tamamlandığında 1 bijon hesabına eklenir. Bijonlar müşteri tarafından elle eklenemez. 5 bijonu tamamladığında Usta İşi Dürüm + Ayran hediyen hazır!</div>
 </div>
 </section>
 <div class="ca-bottom" id="ca-bottom">
@@ -640,6 +646,32 @@ document.addEventListener('DOMContentLoaded',()=>{
     }
   }catch(e){}
 });
+
+  document.addEventListener("click", async function(e){
+    if (!e.target || e.target.id !== "redeemRewardBtn") return;
+    const c = JSON.parse(localStorage.getItem("cirakCustomer") || "null");
+    const phone = normalizePhone((c && c.phone) || "");
+    if (!phone) { alert("Telefon kaydı bulunamadı."); return; }
+
+    e.target.disabled = true;
+    try {
+      const r = await fetch("/api/redeem-reward", {
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({phone})
+      });
+      const d = await r.json();
+      if (!d.ok) throw new Error(d.error || "Hediye kullanılamadı");
+      renderStamps(d.stamps);
+      const msg = encodeURIComponent("🎁 ÇIRAK 5 BİJON HEDİYESİ\\nUsta İşi Dürüm + Ayran\\n📞 " + phone + "\\nHediye kullanımı");
+      window.location.href = "https://wa.me/905346686001?text=" + msg;
+    } catch(err) {
+      alert(err.message || "Bir hata oluştu.");
+    } finally {
+      e.target.disabled = false;
+    }
+  });
+
 </script>
 </div>
 <header class="crakOnlyHeader">
@@ -789,7 +821,11 @@ async function send(){
   let siparisNo;
   try{
     er.textContent="Sipariş numarası hazırlanıyor...";
-    const response=await fetch("/api/order-number",{method:"POST",headers:{"Accept":"application/json"}});
+    const response=await fetch("/api/order-number",{
+      method:"POST",
+      headers:{"Accept":"application/json","Content-Type":"application/json"},
+      body:JSON.stringify({phone:digits})
+    });
     if(!response.ok) throw new Error("Sayaç servisi yanıt vermedi");
     const data=await response.json();
     if(!data || !data.orderNo) throw new Error("Sipariş numarası alınamadı");
@@ -1024,7 +1060,7 @@ render();
     const miniStrong = document.querySelector('.ca-stamp-mini strong');
     if (miniStrong) {
       miniStrong.textContent = count >= STAMP_GOAL
-        ? '🎁 Hediyen hazır!'
+        ? '🎁 Dürüm + Ayran hediyen hazır!'
         : '🎁 Hediyene ' + (STAMP_GOAL - count) + ' bijon kaldı';
     }
 
@@ -1040,10 +1076,13 @@ render();
     const stampHead = document.querySelectorAll('.stamp-head b');
     if (stampHead.length > 1) stampHead[1].textContent = count + '/' + STAMP_GOAL + ' BİJON';
 
+    const rewardReadyBox = document.getElementById('rewardReadyBox');
+    if (rewardReadyBox) rewardReadyBox.style.display = count >= STAMP_GOAL ? 'block' : 'none';
+
     const reward = document.querySelector('.reward');
     if (reward) reward.textContent = count >= STAMP_GOAL
-      ? 'HEDİYEN HAZIR 🎁'
-      : (STAMP_GOAL - count) + ' bijon daha → HEDİYEN HAZIR!';
+      ? '🎁 USTA İŞİ DÜRÜM + AYRAN HAZIR!'
+      : (STAMP_GOAL - count) + ' bijon daha → DÜRÜM + AYRAN HEDİYE!';
   }
 
   async function refreshLoyalty(phone){
