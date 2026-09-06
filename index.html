@@ -513,14 +513,12 @@ header h1,.hero h2,.hero p,.sectionTitle h2,.campaignTag,.card h3,.desc,.price,.
 <input id="street" placeholder="Örn: 10"/>
 <label>No *</label>
 <input id="doorNo" placeholder="Örn: 283"/>
-<label>Dükkan İsmi *</label>
-<input id="shopName" placeholder="Örn: ABC Oto"/>
 </div>
 <label>Sipariş Notu</label><textarea id="note" placeholder="Örn: Soğansız..."></textarea><div class="err" id="err"></div></div>
 <div class="info">📍 Atatürk Oto Sanayi Sitesi 2. Kısım, 10. Sokak No: 283, Maslak / Sarıyer / İstanbul<br/>📞 0534 668 60 01<br/>💳 Nakit • Kredi Kartı • Ticket • Multinet • Pluxee • Metropol • Setcard</div>
 </main><div class="sticky"><div class="bar"><div class="sum"><span id="count">0 ürün</span><br/><span id="bt">0</span></div><button class="wa" onclick="send()">WhatsApp Sipariş</button></div></div>
 <script>
-const p={1:["Kampanya 1","1 Usta İşi Dürüm Alana 1 Usta İşi Dürüm Bedava",199],2:["Kampanya 2","1 Usta İşi Dürüm Alana Ayran Bedava",139],3:["Kampanya 3","1 Kilo Usta İşi Döner + Lavaş + Garnitür + Patates + 1 L Ayran veya Kola Bedava",1500],4:["Kampanya 4","Yarım Kilo Usta İşi Döner + Lavaş + Garnitür + Patates + 1 L Ayran veya Kola Bedava",850],5:["Kampanya 5","Yarım Ekmek Mis Köfte Alana 1 Yarım Ekmek Mis Köfte Bedava",429],6:["Kampanya 6","Yarım Ekmek Mis Köfte Alana Ayran Bedava",249],7:["Kampanya 7","Yarım Kilo Mis Köfte + Patates + Garnitür + 1 L Ayran veya Kola Bedava",1299],8:["Kampanya 8","1 Kilo Mis Köfte + Patates + Garnitür + 1 L Ayran veya Kola Bedava",1899]};let c={};
+const p={1:["Kampanya 1","1 Usta İşi Dürüm Alana 1 Usta İşi Dürüm Bedava",199],2:["Kampanya 2","1 Usta İşi Dürüm Alana Ayran Bedava",139],3:["Kampanya 3","1 Kilo Usta İşi Döner + Lavaş + Garnitür + Patates + 1 L Ayran veya Kola Bedava",1499],4:["Kampanya 4","Yarım Kilo Usta İşi Döner + Lavaş + Garnitür + Patates + 1 L Ayran veya Kola Bedava",849],5:["Kampanya 5","Yarım Ekmek Mis Köfte Alana 1 Yarım Ekmek Mis Köfte Bedava",429],6:["Kampanya 6","Yarım Ekmek Mis Köfte Alana Ayran Bedava",249],7:["Kampanya 7","Yarım Kilo Mis Köfte + Patates + Garnitür + 1 L Ayran veya Kola Bedava",1299],8:["Kampanya 8","1 Kilo Mis Köfte + Patates + Garnitür + 1 L Ayran veya Kola Bedava",1899]};let c={};
 function add(i){c[i]=(c[i]||0)+1;render();document.querySelector(".cart").scrollIntoView({behavior:"smooth"})}
 function ch(i,d){c[i]+=d;if(c[i]<=0)delete c[i];render()}function del(i){delete c[i];render()}
 function calc(){let q=0,t=0;for(let i in c){q+=c[i];t+=c[i]*p[i][2]}if(document.getElementById("type").value==="Teslimat"&&q>0)t+=29;return[q,t]}
@@ -541,10 +539,9 @@ async function send(){
   let part=document.getElementById("part").value.trim();
   let street=document.getElementById("street").value.trim();
   let doorNo=document.getElementById("doorNo").value.trim();
-  let shopName=document.getElementById("shopName").value.trim();
   let streetClean=street.replace(/\s*(\.\s*)?sokak\s*$/i,"").trim();
   let streetFormatted=streetClean.endsWith(".")?`${streetClean} Sokak`:`${streetClean}. Sokak`;
-  let ad=`${part}. Kısım, ${streetFormatted}, No: ${doorNo}, Dükkan: ${shopName}`;
+  let ad=`${part}. Kısım, ${streetFormatted}, No: ${doorNo}`;
   let payment=document.getElementById("payment").value;
 
   if(n.length<2){
@@ -560,8 +557,8 @@ async function send(){
     return;
   }
 
-  if(ty==="Teslimat" && (!part || !street || !doorNo || !shopName)){
-    er.textContent="Teslimat için Kısım, Sokak, No ve Dükkan İsmi alanlarını doldurun.";
+  if(ty==="Teslimat" && (!part || !street || !doorNo)){
+    er.textContent="Teslimat için Kısım, Sokak ve No alanlarını doldurun.";
     return;
   }
   if(!payment){
