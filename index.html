@@ -2,6 +2,7 @@
 <html lang="tr"><head><meta charset="utf-8"/><meta content="width=device-width,initial-scale=1" name="viewport"/><title>Etibeyaz Maslak</title>
 <!-- otomatik yayin testi -->
 <!-- github otomatik yayin kontrol2-->
+<!-- V55 WhatsApp mesaj duzeltmesi: Unicode emoji + tek teslimat satiri -->
 <style>
 :root{
  --red:#b20e14;--red2:#73070b;--black:#0b0b0b;--panel:#151515;
@@ -563,21 +564,29 @@ async function send(){
     return;
   }
   let zaman=document.getElementById("time").value;
-  let m=`🟥 ETİBEYAZ MASLAK
+  // Emojileri Unicode kodlarından üret: WhatsApp/kopyalama sırasında bozulmayı önler.
+  const I={
+    red:"\u{1F7E5}", cart:"\u{1F6D2}", money:"\u{1F4B0}",
+    delivery:"\u{1F6F5}", pickup:"\u{1F4E6}", clock:"\u23F1\uFE0F",
+    card:"\u{1F4B3}", person:"\u{1F464}", phone:"\u{1F4DE}",
+    shop:"\u{1F3EA}", pin:"\u{1F4CD}", note:"\u{1F4DD}"
+  };
+  const orderTypeLine = ty==="Teslimat" ? `${I.delivery} TESLİMAT` : `${I.pickup} GEL-AL`;
+  let m=`${I.red} ETİBEYAZ MASLAK
 SİPARİŞ NO: ${siparisNo}
 
-🛒 SİPARİŞ
+${I.cart} SİPARİŞ
 ${lines.join("\n")}
 
-💰 TOPLAM: ${a[1]}
-${ty==="Teslimat"?"🛵 Teslimat\n":""}📦 ${ty.toUpperCase()}
-⏱ ${zaman}
-💳 ÖDEME: ${payment}
+${I.money} TOPLAM: ${a[1]}
+${orderTypeLine}
+${I.clock} ${zaman}
+${I.card} ÖDEME: ${payment}
 
-👤 ${n}
-📞 ${prettyPhone}
-🏪 ${company}
-${ty==="Teslimat"?"📍 "+ad+"\n":""}📝 Not: ${note}`;
+${I.person} ${n}
+${I.phone} ${prettyPhone}
+${I.shop} ${company}
+${ty==="Teslimat"?I.pin+" "+ad+"\n":""}${I.note} Not: ${note}`;
 
   location.href="https://wa.me/905346686001?text="+encodeURIComponent(m);
 }
