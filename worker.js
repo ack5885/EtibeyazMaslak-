@@ -19,6 +19,17 @@ export default {
       `).run();
     }
 
+
+      await env.ORDER_DB.prepare(`
+        CREATE TABLE IF NOT EXISTS order_bijons (
+          order_id INTEGER PRIMARY KEY,
+          phone TEXT NOT NULL,
+          awarded INTEGER NOT NULL DEFAULT 0,
+          created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+          awarded_at TEXT
+        )
+      `).run();
+
     if (url.pathname === "/api/customer") {
       if (!env.ORDER_DB) {
         return Response.json({ ok:false, error:"ORDER_DB binding missing" }, { status:500 });
@@ -67,22 +78,7 @@ export default {
     }
 
     if (url.pathname === "/api/add-stamp") {
-      if (request.method !== "POST") return new Response("Method Not Allowed",{status:405});
-      if (!env.ORDER_DB) return Response.json({ok:false,error:"ORDER_DB binding missing"},{status:500});
-
-      const body = await request.json();
-      const phone = String(body.phone||"").replace(/\D/g,"").slice(-10);
-      if (!phone) return Response.json({ok:false,error:"Telefon gerekli"},{status:400});
-
-      const row = await env.ORDER_DB.prepare(`
-        UPDATE customers
-        SET stamps = stamps + 1, updated_at=CURRENT_TIMESTAMP
-        WHERE phone=?
-        RETURNING stamps
-      `).bind(phone).first();
-
-      if (!row) return Response.json({ok:false,error:"Müşteri bulunamadı"},{status:404});
-      return Response.json({ok:true,stamps:Number(row.stamps)});
+      return Response.json({ok:false,error:"Bijon yalnızca sipariş üzerinden eklenebilir."},{status:403});
     }
 
     if (url.pathname === "/api/order-number") {
@@ -93,13 +89,54 @@ export default {
         return Response.json({ ok:false, error:"ORDER_DB binding missing" }, { status:500 });
       }
 
+      let body = {};
+      try { body = await request.json(); } catch (_) {}
+      const phone = String(body.phone || "").replace(/\D/g,"").slice(-10);
+
       const row = await env.ORDER_DB
         .prepare("INSERT INTO order_numbers DEFAULT VALUES RETURNING id")
         .first();
 
       const id = Number(row.id);
       const orderNo = `EB-${String(id).padStart(4, "0")}`;
-      return Response.json({ ok:true, orderNo, id }, { headers:{ "Cache-Control":"no-store" } });
+
+      let stamps = null;
+      if (phone) {
+        const customer = await env.ORDER_DB.prepare(
+          "SELECT phone FROM customers WHERE phone=?"
+        ).bind(phone).first();
+
+        if (customer) {
+          await env.ORDER_DB.prepare(
+            "INSERT OR IGNORE INTO order_bijons(order_id,phone,awarded) VALUES(?,?,0)"
+          ).bind(id, phone).run();
+
+          const award = await env.ORDER_DB.prepare(`
+            UPDATE order_bijons
+            SET awarded=1, awarded_at=CURRENT_TIMESTAMP
+            WHERE order_id=? AND awarded=0
+            RETURNING phone
+          `).bind(id).first();
+
+          if (award) {
+            await env.ORDER_DB.prepare(`
+              UPDATE customers
+              SET stamps = CASE WHEN stamps < 5 THEN stamps + 1 ELSE stamps END,
+                  updated_at=CURRENT_TIMESTAMP
+              WHERE phone=?
+            `).bind(phone).run();
+          }
+
+          const c = await env.ORDER_DB.prepare(
+            "SELECT stamps FROM customers WHERE phone=?"
+          ).bind(phone).first();
+          stamps = Number(c?.stamps || 0);
+        }
+      }
+
+      return Response.json({ ok:true, orderNo, id, stamps }, {
+        headers:{ "Cache-Control":"no-store" }
+      });
     }
 
     return env.ASSETS.fetch(request);
