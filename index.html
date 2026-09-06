@@ -425,7 +425,51 @@ header h1,.hero h2,.hero p,.sectionTitle h2,.campaignTag,.card h3,.desc,.price,.
 .cardimg{width:100% !important;max-width:100% !important;height:auto !important;aspect-ratio:auto !important;object-fit:contain !important;object-position:center !important;background:#0b0b0b !important;}
 @media(max-width:620px){.cardimg{height:auto !important;aspect-ratio:auto !important;object-fit:contain !important;}}
 </style>
-</head><body><div id="customerApp">
+<style id="v4-registration-readability">
+#ca-profile .ca-form,
+#ca-profile .ca-field,
+#ca-profile .ca-field label,
+#ca-profile .ca-note {
+  color:#171717 !important;
+}
+#ca-profile .ca-field label {
+  font-weight:900 !important;
+  opacity:1 !important;
+}
+#ca-profile .ca-field input {
+  color:#171717 !important;
+  background:#ffffff !important;
+  -webkit-text-fill-color:#171717 !important;
+  opacity:1 !important;
+}
+#ca-profile .ca-field input::placeholder {
+  color:#777777 !important;
+  opacity:1 !important;
+  -webkit-text-fill-color:#777777 !important;
+}
+.gift-register-box{
+  margin:16px 16px 0;
+  padding:16px 15px;
+  border-radius:18px;
+  background:linear-gradient(135deg,#ff7a00,#ff9d2e);
+  color:#111 !important;
+  box-shadow:0 7px 20px rgba(255,122,0,.25);
+  text-align:center;
+}
+.gift-register-title{
+  font-size:18px;
+  line-height:1.2;
+  font-weight:1000;
+  color:#111 !important;
+}
+.gift-register-text{
+  margin-top:7px;
+  font-size:13px;
+  line-height:1.45;
+  font-weight:700;
+  color:#111 !important;
+}
+</style></head><body><div id="customerApp">
 <style>
 :root{--orange:#ff7a00;--orange2:#ff9d2e;--dark:#111;--soft:#f5f5f5;--green:#16a34a}
 body.customer-mode{background:#f3f3f3!important;padding-bottom:82px}
@@ -495,6 +539,11 @@ body.order-mode .ca-order-top{display:block}
 </section>
 <section class="ca-screen" id="ca-profile">
 <div class="ca-titlebar"><button class="ca-back" onclick="customerShow('home')">‹</button><h2>Müşteri Bilgilerim</h2></div>
+<div class="gift-register-box">
+<div class="gift-register-title">🎁 ÇIRAK’TAN SANA HEDİYE VAR!</div>
+<div class="gift-register-text">Kaydını oluştur, sipariş verdikçe damga kazan.<br/><b>Damgalarını biriktir, hediyeni kap!</b></div>
+</div>
+
 <div class="ca-form">
 <div class="ca-field"><label>Ad Soyad</label><input id="cp-name" value="Cengiz Karataş"/></div>
 <div class="ca-field"><label>Telefon</label><input id="cp-phone" inputmode="tel" value="0532 456 82 16"/></div>
