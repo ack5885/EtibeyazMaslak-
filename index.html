@@ -469,6 +469,24 @@ header h1,.hero h2,.hero p,.sectionTitle h2,.campaignTag,.card h3,.desc,.price,.
   font-weight:700;
   color:#111 !important;
 }
+</style><style id="bijon-custom-icon-style">
+.bijon-icon{
+  width:46px;height:46px;
+  display:flex;align-items:center;justify-content:center;
+  margin-bottom:12px;
+}
+.bijon-hex{
+  width:38px;height:38px;
+  background:#ff7a00;
+  clip-path:polygon(25% 6.7%,75% 6.7%,100% 50%,75% 93.3%,25% 93.3%,0 50%);
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:inset 0 0 0 5px #202020;
+}
+.bijon-hex span{
+  width:15px;height:15px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  background:#202020;color:#ff7a00;font-size:8px;
+}
 </style></head><body><div id="customerApp">
 <style>
 :root{--orange:#ff7a00;--orange2:#ff9d2e;--dark:#111;--soft:#f5f5f5;--green:#16a34a}
@@ -526,13 +544,17 @@ body.order-mode .ca-order-top{display:block}
 <div class="ca-body">
 <button class="ca-order-btn" onclick="customerShow('order')">🛒   SİPARİŞ VER</button>
 <div class="ca-grid">
-<div class="ca-card" onclick="customerShow('stamp')"><div class="ico">🎟️</div><h3>Damga Kartım</h3><p><b>4 / 10 damga</b></p></div>
+<div class="ca-card" onclick="customerShow('stamp')">
+<div aria-label="Bijon" class="bijon-icon">
+<div class="bijon-hex"><span>●</span></div>
+</div>
+<h3>5 Bijon Kartım</h3><p><b>0 / 5 BİJON</b></p></div>
 <div class="ca-card" onclick="customerShow('profile')"><div class="ico">👤</div><h3>Bilgilerim</h3><p>Adres ve telefon</p></div>
 </div>
 <div class="ca-stamp-mini" onclick="customerShow('stamp')">
-<strong>🎁 Hediyene 6 damga kaldı</strong>
-<div class="ca-progress"><i></i></div>
-<small>4 / 10 DAMGA • Kartını görmek için dokun</small>
+<strong>🎁 Hediyene 5 bijon kaldı</strong>
+<div class="ca-progress"><i style="width:0%"></i></div>
+<small>0 / 5 BİJON • Kartını görmek için dokun</small>
 </div>
 <div class="ca-last">🧾 <b>Son sipariş:</b> EB-0011  •  Kampanya 3</div>
 </div>
@@ -541,9 +563,8 @@ body.order-mode .ca-order-top{display:block}
 <div class="ca-titlebar"><button class="ca-back" onclick="customerShow('home')">‹</button><h2>Müşteri Bilgilerim</h2></div>
 <div class="gift-register-box">
 <div class="gift-register-title">🎁 ÇIRAK’TAN SANA HEDİYE VAR!</div>
-<div class="gift-register-text">Kaydını oluştur, sipariş verdikçe damga kazan.<br/><b>Damgalarını biriktir, hediyeni kap!</b></div>
+<div class="gift-register-text">Kaydını oluştur, sipariş verdikçe bijon kazan.<br/><b>Bijonlarını biriktir, hediyeni kap!</b></div>
 </div>
-
 <div class="ca-form">
 <div class="ca-field"><label>Ad Soyad</label><input id="cp-name" value="Cengiz Karataş"/></div>
 <div class="ca-field"><label>Telefon</label><input id="cp-phone" inputmode="tel" value="0532 456 82 16"/></div>
@@ -560,23 +581,20 @@ body.order-mode .ca-order-top{display:block}
 </div>
 </section>
 <section class="ca-screen" id="ca-stamp">
-<div class="ca-titlebar"><button class="ca-back" onclick="customerShow('home')">‹</button><h2>Dijital Damga Kartım</h2></div>
+<div class="ca-titlebar"><button class="ca-back" onclick="customerShow('home')">‹</button><h2>5 Bijon Kartım</h2></div>
 <div class="ca-loyalty">
 <div class="stamp-card">
-<div class="stamp-head"><div><b>ÇIRAK</b><br/><small>DİJİTAL DAMGA KARTI</small></div><b>4/10</b></div>
-<div class="stamps">
-<div class="stamp on">✓</div><div class="stamp on">✓</div><div class="stamp on">✓</div><div class="stamp on">✓</div><div class="stamp">5</div>
-<div class="stamp">6</div><div class="stamp">7</div><div class="stamp">8</div><div class="stamp">9</div><div class="stamp">🎁</div>
+<div class="stamp-head"><div><b>ÇIRAK</b><br/><small>DİJİTAL BİJON KARTI</small></div><b>0/5 BİJON</b></div>
+<div class="stamps"><div class="stamp">1</div><div class="stamp">2</div><div class="stamp">3</div><div class="stamp">4</div><div class="stamp">5</div></div>
+<div class="reward">5 bijon daha → HEDİYEN HAZIR!</div>
 </div>
-<div class="reward">6 damga daha → HEDİYEN HAZIR!</div>
-</div>
-<div class="ca-how"><b>Damga nasıl işler?</b><br/>Siparişin tamamlandığında damgan hesabına eklenir. Damgalar müşteri tarafından elle eklenemez. Ödül koşulunu daha sonra birlikte belirleyebiliriz.</div>
+<div class="ca-how"><b>Bijon nasıl işler?</b><br/>Siparişin tamamlandığında 1 bijon hesabına eklenir. Bijonlar müşteri tarafından elle eklenemez. 5 bijonu tamamladığında hediyen hazır!</div>
 </div>
 </section>
 <div class="ca-bottom" id="ca-bottom">
 <button class="ca-nav active" onclick="customerShow('home')"><b>⌂</b>Ana Sayfa</button>
 <button class="ca-nav" onclick="customerShow('order')"><b>🛒</b>Sipariş</button>
-<button class="ca-nav" onclick="customerShow('stamp')"><b>🎟️</b>Damga</button>
+<button class="ca-nav" onclick="customerShow('stamp')"><b>🎟️</b>Bijon</button>
 <button class="ca-nav" onclick="customerShow('profile')"><b>👤</b>Bilgilerim</button>
 </div>
 <script>
@@ -942,7 +960,7 @@ render();
 })();
 </script><script>
 (function(){
-  const STAMP_GOAL = 10;
+  const STAMP_GOAL = 5;
 
   function normalizePhone(v){
     let d=(v||'').replace(/\D/g,'');
@@ -996,28 +1014,36 @@ render();
   }
 
   function renderStamps(count){
-    count=Math.max(0,Math.min(STAMP_GOAL,Number(count)||0));
-    document.querySelectorAll('.stamp').forEach((el,i)=>{
-      el.classList.toggle('on',i<count);
-      el.textContent=i<count?'✓':(i===9?'🎁':String(i+1));
+    count = Math.max(0, Math.min(STAMP_GOAL, Number(count) || 0));
+
+    document.querySelectorAll('.stamp').forEach((el, i) => {
+      el.classList.toggle('on', i < count);
+      el.textContent = i < count ? '🔩' : String(i + 1);
     });
-    const mini=document.querySelectorAll('.ca-stamp-mini strong');
-    if(mini.length){
-      mini[0].textContent = count>=STAMP_GOAL ? '🎁 Hediyen hazır!' : '🎁 Hediyene '+(STAMP_GOAL-count)+' damga kaldı';
+
+    const miniStrong = document.querySelector('.ca-stamp-mini strong');
+    if (miniStrong) {
+      miniStrong.textContent = count >= STAMP_GOAL
+        ? '🎁 Hediyen hazır!'
+        : '🎁 Hediyene ' + (STAMP_GOAL - count) + ' bijon kaldı';
     }
-    const sm=document.querySelector('.ca-stamp-mini small');
-    if(sm) sm.textContent=count+' / '+STAMP_GOAL+' DAMGA • Kartını görmek için dokun';
-    const prog=document.querySelector('.ca-progress i');
-    if(prog) prog.style.width=(count/STAMP_GOAL*100)+'%';
 
-    const countTexts=[...document.querySelectorAll('.ca-card p b')];
-    if(countTexts[0]) countTexts[0].textContent=count+' / '+STAMP_GOAL+' damga';
+    const miniSmall = document.querySelector('.ca-stamp-mini small');
+    if (miniSmall) miniSmall.textContent = count + ' / ' + STAMP_GOAL + ' BİJON • Kartını görmek için dokun';
 
-    const stampHead=[...document.querySelectorAll('.stamp-head b')];
-    if(stampHead.length>1) stampHead[1].textContent=count+'/'+STAMP_GOAL;
+    const prog = document.querySelector('.ca-progress i');
+    if (prog) prog.style.width = (count / STAMP_GOAL * 100) + '%';
 
-    const reward=document.querySelector('.reward');
-    if(reward) reward.textContent = count>=STAMP_GOAL ? 'HEDİYEN HAZIR 🎁' : (STAMP_GOAL-count)+' damga daha → HEDİYEN HAZIR!';
+    const countText = document.querySelector('.ca-card p b');
+    if (countText) countText.textContent = count + ' / ' + STAMP_GOAL + ' BİJON';
+
+    const stampHead = document.querySelectorAll('.stamp-head b');
+    if (stampHead.length > 1) stampHead[1].textContent = count + '/' + STAMP_GOAL + ' BİJON';
+
+    const reward = document.querySelector('.reward');
+    if (reward) reward.textContent = count >= STAMP_GOAL
+      ? 'HEDİYEN HAZIR 🎁'
+      : (STAMP_GOAL - count) + ' bijon daha → HEDİYEN HAZIR!';
   }
 
   async function refreshLoyalty(phone){
