@@ -81,6 +81,27 @@ export default {
       return Response.json({ok:false,error:"Bijon yalnızca sipariş üzerinden eklenebilir."},{status:403});
     }
 
+
+    if (url.pathname === "/api/redeem-reward") {
+      if (request.method !== "POST") return new Response("Method Not Allowed",{status:405});
+      if (!env.ORDER_DB) return Response.json({ok:false,error:"ORDER_DB binding missing"},{status:500});
+
+      let body = {};
+      try { body = await request.json(); } catch (_) {}
+      const phone = String(body.phone || "").replace(/\D/g,"").slice(-10);
+      if (!phone) return Response.json({ok:false,error:"Telefon gerekli"},{status:400});
+
+      const row = await env.ORDER_DB.prepare(`
+        UPDATE customers
+        SET stamps = stamps - 5, updated_at=CURRENT_TIMESTAMP
+        WHERE phone=? AND stamps >= 5
+        RETURNING stamps
+      `).bind(phone).first();
+
+      if (!row) return Response.json({ok:false,error:"Hediye için 5 bijon gerekli"},{status:400});
+      return Response.json({ok:true,stamps:Number(row.stamps),reward:"Usta İşi Dürüm + Ayran"});
+    }
+
     if (url.pathname === "/api/order-number") {
       if (request.method !== "POST") {
         return new Response("Method Not Allowed", { status: 405, headers: { "Allow": "POST" } });
