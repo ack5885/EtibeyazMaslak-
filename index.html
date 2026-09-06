@@ -589,7 +589,7 @@ body.order-mode .ca-order-top{display:block}
 <div class="reward">5 bijon daha → DÜRÜM + AYRAN HEDİYE!</div>
 <div id="rewardReadyBox" style="display:none;margin:18px 0 0;text-align:center">
   <div style="font-weight:900;font-size:18px;margin-bottom:10px">🎁 USTA İŞİ DÜRÜM + AYRAN HEDİYEN HAZIR!</div>
-  <button id="redeemRewardBtn" type="button" onclick="redeemReward()" style="width:100%;border:0;border-radius:16px;padding:15px;font-weight:900;font-size:16px;background:#ff7a00;color:#111">HEDİYEMİ KULLAN</button>
+  <button id="redeemRewardBtn" type="button" onclick="confirmRedeemReward()" style="width:100%;border:0;border-radius:16px;padding:15px;font-weight:900;font-size:16px;background:#ff7a00;color:#111">HEDİYEMİ KULLAN</button>
   <div style="font-size:12px;margin-top:8px;color:#666">Hediye kullanıldığında 5 bijon düşer. Hediye siparişi yeni bijon kazandırmaz.</div>
 </div>
 
@@ -672,6 +672,24 @@ document.addEventListener('DOMContentLoaded',()=>{
     }
   });
 
+
+
+async function syncLoyaltyAfterOrder(stamps){
+  if (typeof stamps === "number") { renderStamps(stamps); return; }
+  try{
+    const c=JSON.parse(localStorage.getItem("cirakCustomer")||"null");
+    const phone=normalizePhone((c&&c.phone)||"");
+    if(phone) await refreshLoyalty(phone);
+  }catch(e){}
+}
+
+
+function confirmRedeemReward(){
+  const ok = window.confirm("🎁 Usta İşi Dürüm + Ayran hediyeni kullanmak istiyor musun?\n\nOnayladığında 5 bijon düşecek ve WhatsApp hediye siparişi açılacak.");
+  if(!ok) return;
+  redeemReward();
+}
+
 async function redeemReward(){
   const btn=document.getElementById("redeemRewardBtn");
   let c=null;
@@ -680,22 +698,35 @@ async function redeemReward(){
   if(!phone){ alert("Telefon kaydı bulunamadı."); return; }
 
   if(btn){ btn.disabled=true; btn.textContent="HAZIRLANIYOR..."; }
+
   try{
     const r=await fetch("/api/redeem-reward",{
       method:"POST",
       headers:{"Content-Type":"application/json"},
       body:JSON.stringify({phone})
     });
+
     const d=await r.json();
     if(!r.ok||!d.ok) throw new Error(d.error||"Hediye kullanılamadı.");
+
     renderStamps(Number(d.stamps||0));
-    const msg="🎁 ÇIRAK 5 BİJON HEDİYESİ\nUsta İşi Dürüm + Ayran\n📞 "+phone+"\n✅ Hediye kullanımı";
-    window.location.href="https://wa.me/905346686001?text="+encodeURIComponent(msg);
+
+    const msg =
+      "🎁 ÇIRAK 5 BİJON HEDİYESİ\n" +
+      "Usta İşi Dürüm + Ayran\n" +
+      "📞 " + phone + "\n" +
+      "✅ Hediye kullanımı";
+
+    setTimeout(()=>{
+      window.location.href="https://wa.me/905346686001?text="+encodeURIComponent(msg);
+    },150);
+
   }catch(err){
     alert(err.message||"Bir hata oluştu.");
     if(btn){ btn.disabled=false; btn.textContent="HEDİYEMİ KULLAN"; }
   }
 }
+
 </script>
 </div>
 <header class="crakOnlyHeader">
@@ -851,7 +882,7 @@ async function send(){
       body:JSON.stringify({phone:digits})
     });
     if(!response.ok) throw new Error("Sayaç servisi yanıt vermedi");
-    const data=await response.json();
+    const data=await response.json(); await syncLoyaltyAfterOrder(data.stamps);
     if(!data || !data.orderNo) throw new Error("Sipariş numarası alınamadı");
     siparisNo=data.orderNo;
     er.textContent="";

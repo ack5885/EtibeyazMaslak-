@@ -30,6 +30,16 @@ export default {
         )
       `).run();
 
+
+      await env.ORDER_DB.prepare(`
+        CREATE TABLE IF NOT EXISTS reward_uses (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          phone TEXT NOT NULL,
+          reward TEXT NOT NULL,
+          created_at TEXT DEFAULT CURRENT_TIMESTAMP
+        )
+      `).run();
+
     if (url.pathname === "/api/customer") {
       if (!env.ORDER_DB) {
         return Response.json({ ok:false, error:"ORDER_DB binding missing" }, { status:500 });
@@ -99,7 +109,16 @@ export default {
       `).bind(phone).first();
 
       if (!row) return Response.json({ok:false,error:"Hediye için 5 bijon gerekli"},{status:400});
-      return Response.json({ok:true,stamps:Number(row.stamps),reward:"Usta İşi Dürüm + Ayran"});
+
+      await env.ORDER_DB.prepare(
+        "INSERT INTO reward_uses(phone,reward) VALUES(?,?)"
+      ).bind(phone,"Usta İşi Dürüm + Ayran").run();
+
+      return Response.json({
+        ok:true,
+        stamps:Number(row.stamps),
+        reward:"Usta İşi Dürüm + Ayran"
+      },{headers:{"Cache-Control":"no-store"}});
     }
 
     if (url.pathname === "/api/order-number") {
@@ -120,11 +139,11 @@ export default {
 
       const id = Number(row.id);
       const orderNo = `EB-${String(id).padStart(4, "0")}`;
-
       let stamps = null;
+
       if (phone) {
         const customer = await env.ORDER_DB.prepare(
-          "SELECT phone FROM customers WHERE phone=?"
+          "SELECT phone, stamps FROM customers WHERE phone=?"
         ).bind(phone).first();
 
         if (customer) {
@@ -136,13 +155,13 @@ export default {
             UPDATE order_bijons
             SET awarded=1, awarded_at=CURRENT_TIMESTAMP
             WHERE order_id=? AND awarded=0
-            RETURNING phone
+            RETURNING order_id
           `).bind(id).first();
 
           if (award) {
             await env.ORDER_DB.prepare(`
               UPDATE customers
-              SET stamps = CASE WHEN stamps < 5 THEN stamps + 1 ELSE stamps END,
+              SET stamps = CASE WHEN stamps < 5 THEN stamps + 1 ELSE 5 END,
                   updated_at=CURRENT_TIMESTAMP
               WHERE phone=?
             `).bind(phone).run();
@@ -151,13 +170,15 @@ export default {
           const c = await env.ORDER_DB.prepare(
             "SELECT stamps FROM customers WHERE phone=?"
           ).bind(phone).first();
+
           stamps = Number(c?.stamps || 0);
         }
       }
 
-      return Response.json({ ok:true, orderNo, id, stamps }, {
-        headers:{ "Cache-Control":"no-store" }
-      });
+      return Response.json(
+        { ok:true, orderNo, id, stamps },
+        { headers:{ "Cache-Control":"no-store" } }
+      );
     }
 
     return env.ASSETS.fetch(request);
