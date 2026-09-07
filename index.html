@@ -556,7 +556,7 @@ body.order-mode .ca-order-top{display:block}
 <div class="ca-progress"><i style="width:0%"></i></div>
 <small>0 / 5 BİJON • Kartını görmek için dokun</small>
 </div>
-<div class="ca-last">🧾 <b>Son sipariş:</b> EB-0011  •  Kampanya 3</div>
+<div class="ca-last">🧾 <b>Son sipariş:</b> Henüz sipariş yok</div>
 </div>
 </section>
 <section class="ca-screen" id="ca-profile">
@@ -653,6 +653,9 @@ async function syncLoyaltyAfterOrder(stamps){
   try{
     const c=JSON.parse(localStorage.getItem("cirakCustomer")||"null");
     const phone=((c&&c.phone)||"").replace(/\D/g,"").replace(/^90/,"").replace(/^0/,"").slice(-10);
+    if(window.cirakLoyalty && typeof window.cirakLoyalty.render==="function" && stamps!==null && stamps!==undefined){
+      window.cirakLoyalty.render(stamps);
+    }
     if(phone && window.cirakLoyalty && typeof window.cirakLoyalty.refresh==="function"){
       await window.cirakLoyalty.refresh(phone);
     }
@@ -660,6 +663,26 @@ async function syncLoyaltyAfterOrder(stamps){
     console.error("Bijon yenileme hatası:", e);
   }
 }
+
+function saveLastOrder(orderNo){
+  try{
+    const ids=Object.keys(c);
+    const summary=ids.length===1 ? p[ids[0]][0] : (ids.length+" ürün");
+    const text=orderNo+" • "+summary;
+    localStorage.setItem("cirakLastOrder", text);
+    const el=document.querySelector(".ca-last");
+    if(el) el.innerHTML="🧾 <b>Son sipariş:</b> "+text;
+  }catch(e){}
+}
+
+function loadLastOrder(){
+  try{
+    const text=localStorage.getItem("cirakLastOrder");
+    const el=document.querySelector(".ca-last");
+    if(text && el) el.innerHTML="🧾 <b>Son sipariş:</b> "+text;
+  }catch(e){}
+}
+document.addEventListener("DOMContentLoaded", loadLastOrder);
 
 
 function confirmRedeemReward(){
@@ -878,6 +901,7 @@ async function send(){
     const data=await response.json();
     if(!data || !data.orderNo) throw new Error("Sipariş numarası alınamadı");
     siparisNo=data.orderNo;
+    saveLastOrder(siparisNo);
     await syncLoyaltyAfterOrder(data.stamps);
     er.textContent="";
   }catch(e){
@@ -1180,7 +1204,8 @@ render();
 
   window.cirakLoyalty = {
     normalizePhone,
-    refresh: refreshLoyalty
+    refresh: refreshLoyalty,
+    render: renderStamps
   };
 })();
 </script></body></html>
