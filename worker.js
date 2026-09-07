@@ -74,10 +74,19 @@ async function ensureSchema(env){
   `).run();
 }
 
-function requireAdmin(request, env){
-  const expected = String(env.USTA_PIN||"");
+async function requireAdmin(request, env){
+  let expected = "";
+  try {
+    if (env.USTA_PIN && typeof env.USTA_PIN.get === "function") {
+      expected = String(await env.USTA_PIN.get() || "");
+    } else {
+      expected = String(env.USTA_PIN || "");
+    }
+  } catch (_) {
+    expected = "";
+  }
   const got = request.headers.get("x-usta-pin") || "";
-  return expected && got === expected;
+  return !!expected && got === expected;
 }
 
 export default {
@@ -236,7 +245,7 @@ export default {
     }
 
     if (url.pathname === "/api/admin/orders") {
-      if(!requireAdmin(request,env)) return json({ok:false,error:"Yetkisiz"},401);
+      if(!(await requireAdmin(request,env))) return json({ok:false,error:"Yetkisiz"},401);
       if(request.method!=="GET") return new Response("Method Not Allowed",{status:405});
 
       const status=url.searchParams.get("status")||"";
@@ -265,7 +274,7 @@ export default {
 
     const statusMatch=url.pathname.match(/^\/api\/admin\/orders\/(\d+)\/status$/);
     if(statusMatch){
-      if(!requireAdmin(request,env)) return json({ok:false,error:"Yetkisiz"},401);
+      if(!(await requireAdmin(request,env))) return json({ok:false,error:"Yetkisiz"},401);
       if(request.method!=="POST") return new Response("Method Not Allowed",{status:405});
 
       const id=Number(statusMatch[1]);
@@ -318,7 +327,7 @@ export default {
     }
 
     if (url.pathname === "/api/admin/stats") {
-      if(!requireAdmin(request,env)) return json({ok:false,error:"Yetkisiz"},401);
+      if(!(await requireAdmin(request,env))) return json({ok:false,error:"Yetkisiz"},401);
       const total=await env.ORDER_DB.prepare("SELECT COUNT(*) c FROM orders").first();
       const open=await env.ORDER_DB.prepare(
         "SELECT COUNT(*) c FROM orders WHERE status NOT IN ('Teslim Edildi','İptal')"
