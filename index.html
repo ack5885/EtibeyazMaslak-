@@ -650,12 +650,15 @@ document.addEventListener('DOMContentLoaded',()=>{
 
 
 async function syncLoyaltyAfterOrder(stamps){
-  if (typeof stamps === "number") { renderStamps(stamps); return; }
   try{
     const c=JSON.parse(localStorage.getItem("cirakCustomer")||"null");
-    const phone=normalizePhone((c&&c.phone)||"");
-    if(phone) await refreshLoyalty(phone);
-  }catch(e){}
+    const phone=((c&&c.phone)||"").replace(/\D/g,"").replace(/^90/,"").replace(/^0/,"").slice(-10);
+    if(phone && window.cirakLoyalty && typeof window.cirakLoyalty.refresh==="function"){
+      await window.cirakLoyalty.refresh(phone);
+    }
+  }catch(e){
+    console.error("Bijon yenileme hatası:", e);
+  }
 }
 
 
@@ -669,7 +672,7 @@ async function redeemReward(){
   const btn=document.getElementById("redeemRewardBtn");
   let c=null;
   try{ c=JSON.parse(localStorage.getItem("cirakCustomer")||"null"); }catch(e){}
-  const phone=normalizePhone((c&&c.phone)||"");
+  const phone=String((c&&c.phone)||"").replace(/\D/g,"").replace(/^90/,"").replace(/^0/,"").slice(-10);
 
   if(!phone){
     alert("Telefon kaydı bulunamadı.");
@@ -695,7 +698,9 @@ async function redeemReward(){
       throw new Error(d.error || ("Sunucu hatası: " + r.status));
     }
 
-    renderStamps(Number(d.stamps||0));
+    if(window.cirakLoyalty && typeof window.cirakLoyalty.refresh==="function"){
+      await window.cirakLoyalty.refresh(phone);
+    }
 
     const msg =
       "🎁 ÇIRAK 5 BİJON HEDİYESİ\n" +
@@ -870,9 +875,10 @@ async function send(){
       body:JSON.stringify({phone:digits})
     });
     if(!response.ok) throw new Error("Sayaç servisi yanıt vermedi");
-    const data=await response.json(); await syncLoyaltyAfterOrder(data.stamps);
+    const data=await response.json();
     if(!data || !data.orderNo) throw new Error("Sipariş numarası alınamadı");
     siparisNo=data.orderNo;
+    await syncLoyaltyAfterOrder(data.stamps);
     er.textContent="";
   }catch(e){
     console.error(e);
