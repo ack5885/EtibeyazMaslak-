@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>ÇIRAK USTA PANELİ</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f5f5f5;color:#111}
+header{background:#111;color:#fff;padding:18px 16px;position:sticky;top:0;z-index:10}
+header b{font-size:22px}header span{color:#ff7a00}.wrap{max-width:900px;margin:auto;padding:14px}
+.login,.card,.stats{background:#fff;border-radius:18px;padding:16px;margin-bottom:14px;box-shadow:0 4px 18px #0001}
+input,button,select{font:inherit}.login input{width:100%;padding:14px;border:1px solid #ccc;border-radius:12px;margin:10px 0}
+.btn{border:0;border-radius:12px;padding:12px 14px;font-weight:800;cursor:pointer}.orange{background:#ff7a00;color:#111}.dark{background:#111;color:#fff}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;text-align:center}.stats b{display:block;font-size:24px}
+.toolbar{display:flex;gap:8px;overflow:auto;margin-bottom:12px}.toolbar button{white-space:nowrap}
+.order{border-left:6px solid #ff7a00}.order.reward{border-left-color:#7b2cff}.top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.no{font-size:20px;font-weight:900}.status{font-size:13px;font-weight:900;padding:7px 10px;border-radius:999px;background:#eee}
+.meta{color:#666;line-height:1.55;margin:8px 0}.items{background:#f7f7f7;border-radius:12px;padding:10px;margin:10px 0}.item{margin:5px 0}
+.actions{display:flex;gap:7px;flex-wrap:wrap}.actions button{flex:1;min-width:120px}
+.s-new{background:#eee}.s-prep{background:#ffe0bf}.s-ready{background:#fff0a6}.s-done{background:#c9f4d0}.s-cancel{background:#ffd0d0}
+.err{color:#c00;font-weight:800;margin-top:8px}.muted{color:#777}
+@media(max-width:600px){.stats{grid-template-columns:repeat(3,1fr)}.actions button{min-width:46%}}
+</style>
+</head>
+<body>
+<header><b>ÇIRAK <span>USTA PANELİ</span></b></header>
+<div class="wrap">
+  <div id="login" class="login">
+    <b>Usta PIN</b>
+    <input id="pin" type="password" inputmode="numeric" placeholder="PIN gir">
+    <button class="btn orange" onclick="login()">PANELİ AÇ</button>
+    <div id="loginErr" class="err"></div>
+  </div>
+
+  <div id="app" style="display:none">
+    <div class="stats">
+      <div><b id="stOpen">0</b><span>Açık</span></div>
+      <div><b id="stDone">0</b><span>Teslim</span></div>
+      <div><b id="stTotal">0</b><span>Toplam</span></div>
+    </div>
+
+    <div class="toolbar">
+      <button class="btn dark" onclick="setFilter('')">Tümü</button>
+      <button class="btn" onclick="setFilter('Yeni')">Yeni</button>
+      <button class="btn" onclick="setFilter('Hazırlanıyor')">Hazırlanıyor</button>
+      <button class="btn" onclick="setFilter('Hazır')">Hazır</button>
+      <button class="btn" onclick="setFilter('Teslim Edildi')">Teslim</button>
+      <button class="btn" onclick="loadAll()">↻ Yenile</button>
+    </div>
+
+    <div id="orders"></div>
+  </div>
+</div>
+
+<script>
+let PIN=sessionStorage.getItem("ustaPin")||"";
+let filter="";
+
+function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
+function headers(){return {"x-usta-pin":PIN,"Content-Type":"application/json","Accept":"application/json"}}
+
+async function login(){
+  PIN=document.getElementById("pin").value.trim();
+  const r=await fetch("/api/admin/stats",{headers:headers()});
+  if(!r.ok){document.getElementById("loginErr").textContent="PIN yanlış veya USTA_PIN ayarlı değil.";return}
+  sessionStorage.setItem("ustaPin",PIN);
+  document.getElementById("login").style.display="none";
+  document.getElementById("app").style.display="block";
+  loadAll();
+}
+
+function setFilter(v){filter=v;loadOrders()}
+
+async function loadStats(){
+  const r=await fetch("/api/admin/stats",{headers:headers()});
+  if(r.status===401){sessionStorage.removeItem("ustaPin");location.reload();return}
+  const d=await r.json();
+  document.getElementById("stOpen").textContent=d.open||0;
+  document.getElementById("stDone").textContent=d.delivered||0;
+  document.getElementById("stTotal").textContent=d.total||0;
+}
+
+function statusClass(s){
+  if(s==="Hazırlanıyor")return"s-prep";
+  if(s==="Hazır")return"s-ready";
+  if(s==="Teslim Edildi")return"s-done";
+  if(s==="İptal")return"s-cancel";
+  return"s-new";
+}
+
+function renderOrders(list){
+  const box=document.getElementById("orders");
+  if(!list.length){box.innerHTML='<div class="card muted">Sipariş yok.</div>';return}
+  box.innerHTML=list.map(o=>{
+    const items=(o.items||[]).map(x=>`<div class="item"><b>${esc(x.quantity)}x ${esc(x.campaign)}</b><br><span class="muted">${esc(x.description)}</span></div>`).join("");
+    const addr=o.order_type==="Teslimat" ? `<br>📍 ${esc(o.part)}. Kısım, ${esc(o.street)}, No: ${esc(o.door_no)}`:"";
+    const reward=o.is_reward?'<div style="font-weight:900;color:#7b2cff">🎁 BİJON HEDİYESİ — yeni bijon kazandırmaz</div>':"";
+    return `<div class="card order ${o.is_reward?'reward':''}">
+      <div class="top">
+        <div><div class="no">${esc(o.order_no)}</div><div class="muted">${esc(o.customer_name)} • ${esc(o.phone)}</div></div>
+        <span class="status ${statusClass(o.status)}">${esc(o.status)}</span>
+      </div>
+      ${reward}
+      <div class="items">${items}</div>
+      <div class="meta">
+        ${o.order_type==="Teslimat"?"🛵 Teslimat":"📦 "+esc(o.order_type)} • ⏱️ ${esc(o.ready_time)}<br>
+        💳 ${esc(o.payment)} • 💰 ${esc(o.total)}
+        ${addr}<br>📝 ${esc(o.note||"-")}
+      </div>
+      <div class="actions">
+        <button class="btn s-prep" onclick="changeStatus(${o.id},'Hazırlanıyor')">Hazırlanıyor</button>
+        <button class="btn s-ready" onclick="changeStatus(${o.id},'Hazır')">Hazır</button>
+        <button class="btn s-done" onclick="changeStatus(${o.id},'Teslim Edildi')">Teslim Edildi</button>
+        <button class="btn s-cancel" onclick="changeStatus(${o.id},'İptal')">İptal</button>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+async function loadOrders(){
+  const q=filter?"?status="+encodeURIComponent(filter):"";
+  const r=await fetch("/api/admin/orders"+q,{headers:headers()});
+  if(r.status===401){sessionStorage.removeItem("ustaPin");location.reload();return}
+  const d=await r.json();
+  renderOrders(d.orders||[]);
+}
+
+async function changeStatus(id,status){
+  if(status==="Teslim Edildi" && !confirm("Sipariş teslim edildi mi? Onaylanırsa normal siparişe 1 bijon eklenecek.")) return;
+  const r=await fetch(`/api/admin/orders/${id}/status`,{
+    method:"POST",headers:headers(),body:JSON.stringify({status})
+  });
+  const d=await r.json();
+  if(!r.ok){alert(d.error||"İşlem yapılamadı");return}
+  await loadAll();
+  if(status==="Teslim Edildi" && !d.order?.is_reward){
+    alert("Teslim edildi ✅ Müşteri bijonu: "+d.stamps+"/5");
+  }
+}
+
+async function loadAll(){await Promise.all([loadStats(),loadOrders()])}
+
+if(PIN){
+  document.getElementById("login").style.display="none";
+  document.getElementById("app").style.display="block";
+  loadAll();
+}
+</script>
+</body>
+</html>

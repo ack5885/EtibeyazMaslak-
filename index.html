@@ -594,7 +594,7 @@ body.order-mode .ca-order-top{display:block}
 </div>
 
 </div>
-<div class="ca-how"><b>Bijon nasıl işler?</b><br/>Siparişin tamamlandığında 1 bijon hesabına eklenir. Bijonlar müşteri tarafından elle eklenemez. 5 bijonu tamamladığında Usta İşi Dürüm + Ayran hediyen hazır!</div>
+<div class="ca-how"><b>Bijon nasıl işler?</b><br/>Siparişin teslim edildiğinde 1 bijon hesabına eklenir. Bijonlar müşteri tarafından elle eklenemez. 5 bijonu tamamladığında Usta İşi Dürüm + Ayran hediyen hazır!</div>
 </div>
 </section>
 <div class="ca-bottom" id="ca-bottom">
@@ -892,12 +892,33 @@ async function send(){
   let siparisNo;
   try{
     er.textContent="Sipariş numarası hazırlanıyor...";
-    const response=await fetch("/api/order-number",{
+    const items=Object.keys(c).map(i=>({
+      campaign_id:Number(i),
+      campaign:p[i][0],
+      description:p[i][1],
+      quantity:c[i],
+      unit_price:p[i][2],
+      line_total:c[i]*p[i][2]
+    }));
+
+    const response=await fetch("/api/orders",{
       method:"POST",
       headers:{"Accept":"application/json","Content-Type":"application/json"},
-      body:JSON.stringify({phone:digits})
+      body:JSON.stringify({
+        phone:digits,
+        name:n,
+        order_type:ty,
+        ready_time:document.getElementById("time").value,
+        payment,
+        part:ty==="Teslimat"?part:"",
+        street:ty==="Teslimat"?streetFormatted:"",
+        door_no:ty==="Teslimat"?doorNo:"",
+        note,
+        total:a[1],
+        items
+      })
     });
-    if(!response.ok) throw new Error("Sayaç servisi yanıt vermedi");
+    if(!response.ok) throw new Error("Sipariş servisi yanıt vermedi");
     const data=await response.json();
     if(!data || !data.orderNo) throw new Error("Sipariş numarası alınamadı");
     siparisNo=data.orderNo;
