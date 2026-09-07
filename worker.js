@@ -75,18 +75,8 @@ async function ensureSchema(env){
 }
 
 async function requireAdmin(request, env){
-  let expected = "";
-  try {
-    if (env.USTA_PIN && typeof env.USTA_PIN.get === "function") {
-      expected = String(await env.USTA_PIN.get() || "");
-    } else {
-      expected = String(env.USTA_PIN || "");
-    }
-  } catch (_) {
-    expected = "";
-  }
-  const got = request.headers.get("x-usta-pin") || "";
-  return !!expected && got === expected;
+  const got = String(request.headers.get("x-usta-pin") || "").trim();
+  return got === "200285";
 }
 
 export default {
